@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Gestion des livraisons</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Commande</th>
+            <th>Localisation</th>
+            <th>Livreur</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for delivery in deliveries %}
+        <tr>
+            <td>#{{ delivery.order.id }}</td>
+            <td>{{ delivery.location.description }}</td>
+            <td>{{ delivery.delivery_person.username|default:"Non assigné" }}</td>
+            <td>{{ delivery.status }}</td>
+            <td>
+                <a href="{% url 'delivery:assign_delivery' delivery.id %}">Assigner un livreur</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
