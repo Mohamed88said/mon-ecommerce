@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Accueil{% endblock %}
+{% block content %}
+    <div class="jumbotron text-center py-5 bg-light rounded">
+        <h1 class="display-4">Bienvenue sur notre site e-commerce !</h1>
+        <p class="lead">Découvrez une large gamme de produits et profitez d'une expérience d'achat exceptionnelle.</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg mt-3">Voir les produits</a>
+        {% if user.is_authenticated and user.user_type == 'seller' %}
+            <a href="{% url 'store:product_create' %}" class="btn btn-success btn-lg mt-3 ms-2">Ajouter un produit</a>
+        {% endif %}
+    </div>
+{% endblock %}

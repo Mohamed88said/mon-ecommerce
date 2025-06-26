@@ -1,0 +1,78 @@
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar-sticky {
+    position: relative;
+    top: 0;
+    height: calc(100vh - 48px);
+    padding-top: .5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: #adb5bd;
+}
+
+.nav-link.active {
+    color: #fff;
+    background-color: #495057;
+}
+
+.nav-link:hover {
+    color: #fff;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.table-responsive {
+    margin-bottom: 1rem;
+}
+
+.form-select-sm {
+    width: auto;
+    display: inline-block;
+}
+
+.form-control {
+    max-width: 300px;
+}
+
+/* Styles pour les graphiques */
+canvas {
+    transition: opacity 0.3s ease-in-out;
+}
+
+canvas:hover {
+    opacity: 0.9;
+}
+
+/* Styles pour les filtres */
+.filter-form .form-control,
+.filter-form .form-select-sm {
+    margin-bottom: 0.5rem;
+}
+
+.filter-form .btn {
+    margin-right: 0.5rem;
+}
+
+/* Couleurs personnalisées */
+.bg-purple { background-color: #6f42c1; }
+.bg-orange { background-color: #fd7e14; }
+.bg-teal { background-color: #20c997; }
+.bg-indigo { background-color: #6610f2; }

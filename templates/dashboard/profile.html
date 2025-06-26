@@ -1,0 +1,14 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="py-4">
+    <h1 class="mb-4">Profil vendeur</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{% url 'dashboard:overview' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

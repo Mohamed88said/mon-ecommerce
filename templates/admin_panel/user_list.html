@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Gestion des utilisateurs</h1>
+    <form method="get" class="mb-4">
+        <div class="input-group w-50">
+            <input type="text" name="search" class="form-control" placeholder="Rechercher par nom ou email..." value="{{ search_query }}">
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        </div>
+    </form>
+    <a href="{% url 'admin_panel:export_users' %}" class="btn btn-secondary mb-3">Exporter en CSV</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Actif</th>
+                <th>Staff</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.is_active|yesno:"Oui,Non" }}</td>
+                <td>{{ user.is_staff|yesno:"Oui,Non" }}</td>
+                <td>
+                    <form method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <input type="hidden" name="action" value="toggle_active">
+                        <button type="submit" class="btn btn-sm btn-{% if user.is_active %}danger{% else %}success{% endif %}">
+                            {% if user.is_active %}Désactiver{% else %}Activer{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">Aucun utilisateur trouvé.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

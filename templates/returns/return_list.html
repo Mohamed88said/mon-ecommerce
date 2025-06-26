@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Historique des demandes de retour{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Historique des demandes de retour</h2>
+    {% if return_requests %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Commande</th>
+                        <th>Raison</th>
+                        <th>Statut</th>
+                        <th>Date de soumission</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for return_request in return_requests %}
+                        <tr>
+                            <td>#{{ return_request.order.id }}</td>
+                            <td>{{ return_request.reason }}</td>
+                            <td>{{ return_request.get_status_display }}</td>
+                            <td>{{ return_request.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'store:order_detail' return_request.order.id %}" class="btn btn-sm btn-info">Voir commande</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="alert alert-info">Aucune demande de retour trouvée.</p>
+    {% endif %}
+    <a href="{% url 'store:order_history' %}" class="btn btn-secondary mt-4">Retour à l'historique des commandes</a>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'dashboard/base.html' %}
+  {% load static %}
+
+  {% block dashboard_content %}
+  <div class="py-4">
+      <h1 class="mb-4">Confirmer la suppression</h1>
+      <p>Êtes-vous sûr de vouloir supprimer le produit "{{ object.name }}" ?</p>
+      <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Oui, supprimer</button>
+          <a href="{% url 'dashboard:products' %}" class="btn btn-secondary">Annuler</a>
+      </form>
+  </div>
+  {% endblock %}

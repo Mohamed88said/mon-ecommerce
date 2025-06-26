@@ -1,0 +1,275 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}E-commerce Premium{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'store/css/custom.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navigation Premium -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3 text-gradient" href="{% url 'store:home' %}">
+                <i class="fas fa-star me-2 text-warning"></i>LuxeShop
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link position-relative hover-underline" href="{% url 'store:home' %}">Accueil</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle hover-underline" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Catégories
+                        </a>
+                        <ul class="dropdown-menu animate-dropdown shadow">
+                            {% for category in categories %}
+                                <li><a class="dropdown-item py-2" href="{% url 'store:product_list' %}?category={{ category }}">{{ category }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link hover-underline" href="{% url 'store:product_list' %}">Boutique</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link hover-underline" href="{% url 'blog:post_list' %}">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                         <a class="nav-link" href="{% url 'marketing:loyalty_dashboard' %}">Programme de Fidélité</a>
+                    </li>
+                </ul>
+                
+                <!-- Barre de recherche premium -->
+                <form class="d-flex search-container mx-3" action="{% url 'store:product_list' %}" method="get">
+                    <div class="input-group">
+                        <input class="form-control search-input" type="search" name="q" placeholder="Rechercher un produit..." value="{{ request.GET.q }}">
+                        <button class="btn btn-search" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <ul class="navbar-nav ms-2">
+                    {% if user.is_authenticated %}
+                        <!-- Icône Catégories -->
+                        <li class="nav-item mx-1">
+                            <a class="nav-link icon-link" href="{% url 'store:product_list' %}" data-bs-toggle="tooltip" title="Catégories">
+                                <i class="fas fa-list"></i>
+                            </a>
+                        </li>
+                        <!-- Icône Notifications -->
+                        <li class="nav-item mx-1">
+                            <a class="nav-link icon-link position-relative" href="{% url 'store:notifications' %}" data-bs-toggle="tooltip" title="Notifications">
+                                <i class="fas fa-bell position-relative">
+                                    <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
+                                </i>
+                            </a>
+                        </li>
+                        <!-- Icône Favoris -->
+                        <li class="nav-item mx-1">
+                            <a class="nav-link icon-link" href="{% url 'store:favorites' %}" data-bs-toggle="tooltip" title="Favoris">
+                                <i class="fas fa-heart"></i>
+                            </a>
+                        </li>
+                        <!-- Icône Panier -->
+                        <li class="nav-item mx-1">
+                            <a class="nav-link icon-link" href="{% url 'store:cart' %}" data-bs-toggle="tooltip" title="Panier">
+                                <i class="fas fa-shopping-cart"></i>
+                            </a>
+                        </li>
+                        <!-- Icône Plans d'abonnement -->
+                        <li class="nav-item mx-1">
+                            <a class="nav-link icon-link" href="{% url 'store:subscription_plans' %}" data-bs-toggle="tooltip" title="Abonnements">
+                                <i class="fas fa-star"></i>
+                            </a>
+                        </li>
+                        <!-- Icône Historique des commandes -->
+                        <li class="nav-item mx-1">
+                            <a class="nav-link icon-link" href="{% url 'store:order_history' %}" data-bs-toggle="tooltip" title="Historique des commandes">
+                                <i class="fas fa-shopping-bag"></i>
+                            </a>
+                        </li>
+                        <!-- Menu utilisateur -->
+                        <li class="nav-item dropdown ms-2">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}{% static 'img/default-profile.png' %}{% endif %}" 
+                                     class="rounded-circle me-2" width="32" height="32" alt="Profile">
+                                <span class="d-none d-lg-inline">{{ user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow animate-dropdown">
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Mon profil</a></li>
+                                {% if user.user_type == 'seller' %}
+                                <li><a class="dropdown-item" href="{% url 'dashboard:overview' %}">Tableau de bord</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'account_logout' %}">Déconnexion</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary me-2" href="{% url 'account_login' %}">Connexion</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary" href="{% url 'account_signup' %}">Inscription</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="flex-grow-1">
+        <div class="container my-4">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                        <div>{{ message }}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer Premium -->
+    <footer class="bg-dark text-white py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5 class="text-gradient mb-4">LuxeShop</h5>
+                    <p>Votre destination premium pour des produits d'exception. Qualité garantie et service clientèle exceptionnel.</p>
+                    <div class="social-icons mt-3">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="mb-4">Navigation</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'store:home' %}" class="text-white-50 hover-white">Accueil</a></li>
+                        <li class="mb-2"><a href="{% url 'store:product_list' %}" class="text-white-50 hover-white">Boutique</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 hover-white">Nouveautés</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 hover-white">Meilleures ventes</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="mb-4">Aide</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white-50 hover-white">Contact</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 hover-white">FAQ</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 hover-white">Livraison</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 hover-white">Retours</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5 class="mb-4">Newsletter</h5>
+                    <p>Abonnez-vous pour recevoir nos offres exclusives :</p>
+                    <form class="mt-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Votre email">
+                            <button class="btn btn-primary" type="submit">S'abonner</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4 bg-secondary">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">© 2025 LuxeShop. Tous droits réservés.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <img src="{% static 'img/payment-methods.png' %}" alt="Méthodes de paiement" height="30">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/ScrollTrigger.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'store/js/search.js' %}"></script>
+    <style>
+        .autocomplete-suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 100%;
+            margin-top: 2px;
+        }
+        .suggestion-item {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .suggestion-item:hover {
+            background: #f0f0f0;
+        }
+    </style>
+    {% block extra_js %}
+    {% if user.is_authenticated %}
+    <script>
+        const userId = "{{ user.id }}";
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const wsPath = `${wsScheme}://${window.location.host}/ws/notifications/`;
+        const socket = new WebSocket(wsPath);
+
+        socket.onopen = function(e) {
+            console.log("WebSocket connection established");
+        };
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'new_notification') {
+                alert(`Nouvelle notification : ${data.message}`);
+                const badge = document.getElementById('notification-badge');
+                if (badge) {
+                    badge.style.display = 'inline';
+                }
+            } else if (data.type === 'unread_count') {
+                const badge = document.getElementById('notification-badge');
+                if (badge) {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline' : 'none';
+                }
+            }
+        };
+
+        socket.onclose = function(e) {
+            console.error("WebSocket connection closed unexpectedly");
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket error:", error);
+        };
+
+        document.getElementById('notification-badge')?.addEventListener('click', () => {
+            socket.send(JSON.stringify({
+                type: 'mark_as_read'
+            }));
+        });
+    </script>
+    {% endif %}
+    {% endblock %}
+</body>
+</html>

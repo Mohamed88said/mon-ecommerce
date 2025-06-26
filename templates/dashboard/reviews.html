@@ -1,0 +1,43 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="py-4">
+    <h1 class="mb-4">Gestion des avis</h1>
+    {% if reviews %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Client</th>
+                        <th>Note</th>
+                        <th>Commentaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                        <tr>
+                            <td>{{ review.product.name }}</td>
+                            <td>{{ review.user.username }}</td>
+                            <td>{{ review.rating }}</td>
+                            <td>{{ review.comment }}</td>
+                            <td>
+                                <form method="post" action="{% url 'dashboard:reply_review' review_id=review.id %}">
+                                    {% csrf_token %}
+                                    <input type="text" name="reply" class="form-control mb-2" placeholder="Réponse" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">Répondre</button>
+                                </form>
+                                <a href="{% url 'dashboard:delete_review' review_id=review.id %}" class="btn btn-sm btn-danger mt-2">Supprimer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Aucun avis pour le moment.</p>
+    {% endif %}
+</div>
+{% endblock %}

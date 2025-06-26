@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="bg-light p-4 rounded shadow-sm mb-4">
+        <h1 class="text-primary mb-3">Tableau de bord Admin</h1>
+        <p class="text-muted">Vue d’ensemble des performances et des actions administratives.</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+        <div class="col">
+            <div class="card text-white bg-primary h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs</h5>
+                    <p class="card-text display-5">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-warning h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Produits en attente</h5>
+                    <p class="card-text display-5">{{ pending_products }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-success h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Produits approuvés</h5>
+                    <p class="card-text display-5">{{ approved_products }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-danger h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Signalements ouverts</h5>
+                    <p class="card-text display-5">{{ open_reports }}</p>
+                    <a href="{% url 'admin_panel:report_list' %}" class="btn btn-light btn-sm mt-2">Voir les signalements</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Revenus totaux</h5>
+                    <p class="card-text display-4">{{ total_revenue|floatformat:2 }} €</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Dernières commandes</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for order in recent_orders %}
+                            <li class="list-group-item">Commande #{{ order.id }} - {{ order.created_at|date:"d/m/Y H:i" }} - {{ order.total|floatformat:2 }} €</li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Aucune commande récente.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Produits approuvés par mois</h5>
+                    <div style="position: relative; height: 200px;">
+                        <canvas id="approvalsChart" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Revenus mensuels</h5>
+                    <div style="position: relative; height: 200px;">
+                        <canvas id="monthlyRevenueChart" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Signalements par mois</h5>
+                    <div style="position: relative; height: 200px;">
+                        <canvas id="reportsChart" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Notifications en temps réel</h5>
+                    <div id="notifications" class="list-group" style="max-height: 200px; overflow-y: auto;">
+                        <!-- Notifications s'afficheront ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Actions rapides</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'admin_panel:user_list' %}" class="btn btn-primary">Gérer les utilisateurs</a>
+                        <a href="{% url 'admin_panel:product_moderation' %}" class="btn btn-primary">Modérer les produits</a>
+                        <a href="{% url 'admin_panel:report_list' %}" class="btn btn-primary">Voir les signalements</a>
+                        <a href="{% url 'admin_panel:product_list' %}" class="btn btn-primary">Gérer les produits</a>
+                        <a href="{% url 'admin_panel:export_users' %}" class="btn btn-secondary">Exporter utilisateurs</a>
+                        <a href="{% url 'admin_panel:export_moderations' %}" class="btn btn-secondary">Exporter modérations</a>
+                        <a href="{% url 'admin_panel:export_reports' %}" class="btn btn-secondary">Exporter rapports</a>
+                        <a href="{% url 'admin_panel:review_list' %}" class="btn btn-primary">Gérer les avis</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% load static %}
+<script src="{% static 'js/chart.min.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctxApprovals = document.getElementById('approvalsChart').getContext('2d');
+        const ctxRevenue = document.getElementById('monthlyRevenueChart').getContext('2d');
+        const ctxReports = document.getElementById('reportsChart').getContext('2d');
+
+        new Chart(ctxApprovals, {
+            type: 'bar',
+            data: {
+                labels: {{ monthly_approvals.labels|safe|default:'["Pas de données"]' }},
+                datasets: [{
+                    label: 'Produits approuvés',
+                    data: {{ monthly_approvals.data|safe|default:'[0]' }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
+        });
+
+        new Chart(ctxRevenue, {
+            type: 'bar',
+            data: {
+                labels: {{ monthly_revenue.labels|safe|default:'["Pas de données"]' }},
+                datasets: [{
+                    label: 'Revenus (€)',
+                    data: {{ monthly_revenue.data|safe|default:'[0]' }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
+        });
+
+        new Chart(ctxReports, {
+            type: 'bar',
+            data: {
+                labels: {{ monthly_reports.labels|safe|default:'["Pas de données"]' }},
+                datasets: [{
+                    label: 'Signalements',
+                    data: {{ monthly_reports.data|safe|default:'[0]' }},
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
+        });
+
+        // WebSocket pour notifications
+        const notificationsDiv = document.getElementById('notifications');
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'unread_count') {
+                console.log(`Unread count: ${data.count}`);
+            } else if (data.type === 'new_notification') {
+                const notification = document.createElement('div');
+                notification.className = 'list-group-item';
+                notification.textContent = `${data.message} (${new Date().toLocaleString()})`;
+                notificationsDiv.prepend(notification);
+                if (notificationsDiv.children.length > 5) {
+                    notificationsDiv.removeChild(notificationsDiv.lastChild);
+                }
+            }
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket déconnecté');
+        };
+    });
+</script>
+{% endblock %}

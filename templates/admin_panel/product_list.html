@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Liste des produits</h1>
+    <form method="get" class="mb-4">
+        <div class="input-group w-50">
+            <input type="text" name="search" class="form-control" placeholder="Rechercher par nom, description ou vendeur..." value="{{ search_query }}">
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        </div>
+    </form>
+    <a href="{% url 'admin_panel:export_moderations' %}" class="btn btn-secondary mb-3">Exporter les modérations</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Vendeur</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.seller.username }}</td>
+                <td>{{ product.price }} €</td>
+                <td>{{ product.stock }}</td>
+                <td>
+                    <a href="{% url 'admin_panel:product_moderation' %}?search={{ product.name }}" class="btn btn-info btn-sm">Voir modération</a>
+                    <a href="{% url 'admin_panel:product_edit' product.id %}" class="btn btn-warning btn-sm">Modifier</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">Aucun produit trouvé.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

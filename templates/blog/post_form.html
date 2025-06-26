@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Créer un article{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Créer un nouvel article</h2>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Créer l'article</button>
+        <a href="{% url 'blog:post_list' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

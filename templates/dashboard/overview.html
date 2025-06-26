@@ -1,0 +1,75 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="py-4">
+    <h1 class="mb-4">Vue d'ensemble</h1>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Revenus totaux</h5>
+                    <p class="card-text display-4">{{ total_revenue|floatformat:2 }} €</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Commandes</h5>
+                    <p class="card-text display-4">{{ total_orders }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Produits</h5>
+                    <p class="card-text display-4">{{ total_products }}</p>
+                </div>
+            </div>
+        </div>
+        <!-- Carte pour les statistiques -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Statistiques</h5>
+                    <p class="card-text">Consultez vos données détaillées.</p>
+                    <a href="{% url 'dashboard:statistics' %}" class="btn btn-primary">Voir les statistiques</a>
+                </div>
+            </div>
+        </div>
+        <!-- Carte pour les livraisons -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Livraisons</h5>
+                    <p class="card-text">Gérez les livraisons de vos commandes.</p>
+                    <a href="{% url 'admin_panel:delivery_list' %}" class="btn btn-primary">Gérer les livraisons</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow-sm mt-4">
+        <div class="card-header">
+            <h5>Dernières notifications</h5>
+        </div>
+        <div class="card-body">
+            {% if notifications %}
+                <ul class="list-group list-group-flush">
+                    {% for notification in notifications %}
+                        <li class="list-group-item {% if not notification.is_read %}list-group-item-light{% endif %}">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ notification.message }}</span>
+                                <small class="text-muted">{{ notification.created_at|date:"d M Y H:i" }}</small>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">Aucune notification pour le moment.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

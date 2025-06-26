@@ -1,0 +1,39 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container my-5">
+    <h1 class="mb-4">Revoir la demande de retour #{{ return_request.id }}</h1>
+    <div class="card shadow-sm p-4">
+        <div class="mb-3">
+            <p><strong>Commande :</strong> #{{ return_request.order.id }} ({{ return_request.order.created_at|date:"d/m/Y" }})</p>
+            <p><strong>Client :</strong> {{ return_request.user.username }}</p>
+            <p><strong>Raison :</strong> {{ return_request.reason }}</p>
+            <p><strong>Statut actuel :</strong>
+                <span class="badge bg-{% if return_request.status == 'PENDING' %}warning{% elif return_request.status == 'APPROVED' %}success{% elif return_request.status == 'REJECTED' %}danger{% else %}info{% endif %}">
+                    {{ return_request.get_status_display }}
+                </span>
+            </p>
+            <p><strong>Date de création :</strong> {{ return_request.created_at|date:"d/m/Y H:i" }}</p>
+            {% if return_request.image %}
+                <p><strong>Photo :</strong> <a href="{{ return_request.image.url }}" target="_blank">Voir</a></p>
+            {% endif %}
+        </div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% if return_request.status == 'PENDING' %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="action" value="approve" class="btn btn-success me-2">Approuver</button>
+                <button type="submit" name="action" value="reject" class="btn btn-danger">Rejeter</button>
+            </form>
+        {% else %}
+            <p class="text-muted">Cette demande a déjà été traitée.</p>
+        {% endif %}
+        <a href="{% url 'dashboard:orders' %}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}

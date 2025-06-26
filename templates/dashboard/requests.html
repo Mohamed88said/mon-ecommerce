@@ -1,0 +1,40 @@
+{% extends 'dashboard/base.html' %}
+  {% load static %}
+
+  {% block dashboard_content %}
+  <div class="py-4">
+      <h1 class="mb-4">Gestion des demandes</h1>
+      {% if requests %}
+          <div class="table-responsive">
+              <table class="table table-striped">
+                  <thead>
+                      <tr>
+                          <th>Produit</th>
+                          <th>Client</th>
+                          <th>Date</th>
+                          <th>Actions</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {% for request in requests %}
+                          <tr>
+                              <td>{{ request.product.name }}</td>
+                              <td>{{ request.user.username }}</td>
+                              <td>{{ request.created_at|date:"d M Y" }}</td>
+                              <td>
+                                  <form method="post" action="{% url 'dashboard:respond_request' request_id=request.id %}">
+                                      {% csrf_token %}
+                                      <input type="text" name="response" class="form-control mb-2" placeholder="Réponse" required>
+                                      <button type="submit" class="btn btn-primary btn-sm">Répondre</button>
+                                  </form>
+                              </td>
+                          </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+          </div>
+      {% else %}
+          <p class="text-muted">Aucune demande pour le moment.</p>
+      {% endif %}
+  </div>
+  {% endblock %}

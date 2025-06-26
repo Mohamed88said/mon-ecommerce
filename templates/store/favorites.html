@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Vos produits favoris</h2>
+    
+    {% if favorites %}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for favorite in favorites %}
+            <div class="col">
+                <div class="card h-100">
+                    {% if favorite.product.image1 %}
+                        <img src="{{ favorite.product.image1.url }}" class="card-img-top" alt="{{ favorite.product.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-secondary" style="height: 200px; display: flex; align-items: center; justify-content: center; color: white;">
+                            Aucune image
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ favorite.product.name }}</h5>
+                        <p class="card-text">Prix : {{ favorite.product.discounted_price }} €</p>
+                        <p class="card-text">Stock : {{ favorite.product.stock }} {% if favorite.product.is_sold_out %}(Vendu){% endif %}</p>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'store:product_detail' favorite.product.id %}" class="btn btn-primary">
+                                <i class="fas fa-eye me-1"></i> Voir
+                            </a>
+                            <a href="{% url 'store:toggle_favorite' favorite.product.id %}" class="btn btn-danger">
+                                <i class="fas fa-heart-broken me-1"></i> Retirer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <img src="{% static 'img/empty-favorites.svg' %}" alt="Aucun favori" width="200" class="mb-4">
+            <h5 class="text-muted mb-3">Vous n'avez aucun produit favori</h5>
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+                <i class="fas fa-store me-1"></i> Parcourir les produits
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

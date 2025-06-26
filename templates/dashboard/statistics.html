@@ -1,0 +1,520 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="py-4">
+    <h1 class="mb-4 text-primary text-center">Statistiques Générales</h1>
+
+    <!-- Filtres -->
+    <div class="card shadow-sm mb-5 filter-form">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Filtres de Recherche</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end" id="filterForm">
+                <div class="col-md-3">
+                    {{ filter_form.start_date.label_tag }}
+                    <input type="date" name="start_date" value="{{ filter_form.start_date.value|default:'' }}" class="form-control">
+                    <small class="text-muted">Sélectionnez la date de début pour filtrer les données.</small>
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.end_date.label_tag }}
+                    <input type="date" name="end_date" value="{{ filter_form.end_date.value|default:'' }}" class="form-control">
+                    <small class="text-muted">Sélectionnez la date de fin pour limiter l'analyse.</small>
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.category.label_tag }}
+                    <select name="category" class="form-select-sm">
+                        {% for value, label in filter_form.category.field.choices %}
+                            <option value="{{ value }}" {% if value == filter_form.category.value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Choisissez une catégorie pour affiner les résultats.</small>
+                </div>
+                <div class="col-md-3">
+                    <label for="horizon">Horizon (mois)</label>
+                    <select name="horizon" id="horizon" class="form-select-sm">
+                        <option value="1" {% if horizon == "1" %}selected{% endif %}>1 mois</option>
+                        <option value="3" {% if horizon == "3" %}selected{% endif %}>3 mois</option>
+                        <option value="6" {% if horizon == "6" %}selected{% endif %}>6 mois</option>
+                    </select>
+                    <small class="text-muted">Déterminez la période des prévisions.</small>
+                </div>
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Appliquer</button>
+                    <a href="{% url 'dashboard:statistics' %}" class="btn btn-secondary"><i class="fas fa-undo"></i> Réinitialiser</a>
+                    <a href="#forecasts" class="btn btn-info"><i class="fas fa-chart-line"></i> Voir Prévisions</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Résumé Général -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Résumé Détaillé</h5>
+                </div>
+                <div class="card-body">
+                    {{ summary|safe }}
+                    <small class="text-muted">Ce résumé regroupe toutes les métriques clés : ventes, stocks, commandes, etc. Consultez chaque section pour plus de détails.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Ventes et Commandes -->
+    <h3 class="mb-4 text-secondary"><i class="fas fa-euro-sign"></i> Ventes et Commandes</h3>
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ chart_sales.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyse : Visualisez les tendances saisonnières des revenus. Cliquez pour filtrer par mois.</p>
+                    <canvas id="salesChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Données basées sur le prix total des articles vendus par mois. Les creux peuvent indiquer une faible demande.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-shopping-cart"></i> {{ chart_orders.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyse : Suivez les pics d’activité quotidienne.</p>
+                    <canvas id="ordersChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Nombre de commandes par jour. Les pics peuvent refléter des événements ou une forte demande.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> {{ chart_top_products.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyse : Identifiez vos best-sellers pour maximiser les profits.</p>
+                    <canvas id="topProductsChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Top 5 des produits par quantité vendue. Mettez en avant ces articles pour booster les ventes.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> {{ chart_order_status.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyse : Suivez l’état des commandes en cours.</p>
+                    <canvas id="orderStatusChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Répartition des montants par statut de commande.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Stocks et Demandes -->
+    <h3 class="mb-4 text-secondary"><i class="fas fa-warehouse"></i> Stocks et Demandes</h3>
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-boxes"></i> {{ chart_stock.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyse : Identifiez les stocks critiques à réapprovisionner.</p>
+                    <canvas id="stockChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Niveaux de stock actuels par produit. Les valeurs faibles (<10) nécessitent une action urgente.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-purple text-white">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> {{ chart_requests.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyse : Mesurez l’intérêt des clients pour vos produits.</p>
+                    <canvas id="requestsChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Nombre de demandes par produit. Une forte demande sans stock peut indiquer un besoin de production.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-teal text-white">
+                    <h5 class="mb-0"><i class="fas fa-balance-scale"></i> {{ chart_sales_vs_stock.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyse : Comparez les ventes et les stocks restants.</p>
+                    <canvas id="salesVsStockChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Équilibre entre unités vendues et stocks restants. Ajustez les stocks pour éviter les ruptures.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Clients -->
+    <h3 class="mb-4 text-secondary"><i class="fas fa-users"></i> Clients</h3>
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-comment-dots"></i> {{ chart_reviews.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Analyse : Évaluez la satisfaction des clients.</p>
+                    <canvas id="reviewsChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Note moyenne et nombre d’avis par produit. Améliorez les produits avec des notes faibles.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Activité Globale -->
+    <h3 class="mb-4 text-secondary"><i class="fas fa-chart-bar"></i> Vue Globale</h3>
+    <div class="row mb-5">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-indigo text-white">
+                    <h5 class="mb-0"><i class="fas fa-globe"></i> {{ chart_activity.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Vue d’ensemble : Commandes : {{ activity_data.0 }}, Revenus : {{ activity_data.1|floatformat:2 }} €, Demandes : {{ activity_data.2 }}, Stocks : {{ activity_data.3 }}.</p>
+                    <canvas id="activityChart" class="w-100"></canvas>
+                    <small class="text-muted mt-2">Résumé global des métriques clés. Utilisez ces données pour identifier les tendances générales.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Prévisions -->
+    <h3 class="mb-4 text-secondary" id="forecasts"><i class="fas fa-chart-line"></i> Prévisions et Perspectives</h3>
+    <div class="row mb-5">
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-futbol"></i> Prévisions</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Prévisions sur {{ horizon }} mois :</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-euro-sign"></i> {{ chart_forecast.title }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if forecast_labels and forecast_data and forecast_labels|length > 0 and forecast_data|length > 0 %}
+                                        <canvas id="salesForecastChart" class="w-100"></canvas>
+                                        <small class="text-muted mt-2">Prévisions des revenus basées sur les tendances historiques. Nécessite au moins 2 mois de données.</small>
+                                    {% else %}
+                                        <p>Aucune donnée suffisante pour les prévisions.</p>
+                                        <small class="text-muted">Ajoutez plus de données de ventes pour activer cette fonctionnalité.</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="mb-0"><i class="fas fa-clock"></i> Prévisions à Court Terme</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ short_term_forecast|floatformat:2 }} €</p>
+                                    <small class="text-muted">Estimation basée sur les commandes en attente (50%) et en cours (70%). Surveillez les statuts.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-eye"></i> Influence des Vues</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if view_labels and view_data and view_labels|length > 0 and view_data|length > 0 %}
+                                        <canvas id="viewsChart" class="w-100"></canvas>
+                                        <small class="text-muted mt-2">Impact des vues récentes (derniers 7 jours) sur les ventes, estimé à 10% des vues.</small>
+                                    {% else %}
+                                        <p>Aucune donnée de vues disponible.</p>
+                                        <small class="text-muted">Augmentez la visibilité des produits pour générer des vues.</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-purple text-white">
+                                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Taux de Conversion</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if conversion_rate is not none %}
+                                        <p>{{ conversion_rate|floatformat:2 }} %</p>
+                                        <small class="text-muted">Pourcentage de vues transformées en ventes. Un taux faible peut indiquer un besoin d’optimisation.</small>
+                                    {% else %}
+                                        <p>Aucune donnée pour le taux de conversion.</p>
+                                        <small class="text-muted">Plus de vues et de ventes sont nécessaires pour ce calcul.</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script>
+        // Fonction pour valider les données des graphiques
+        function isValidChartData(labels, data) {
+            return Array.isArray(labels) && Array.isArray(data) && labels.length > 0 && data.length > 0 && labels.length === data.length;
+        }
+
+        // Ventes par mois avec clic pour filtrer
+        let salesChart;
+        if (isValidChartData({{ chart_sales.labels|safe }}, {{ chart_sales.data|safe }})) {
+            salesChart = new Chart(document.getElementById('salesChart'), {
+                type: 'line',
+                data: { 
+                    labels: {{ chart_sales.labels|safe }}, 
+                    datasets: [{ 
+                        label: 'Revenus (€)', 
+                        data: {{ chart_sales.data|safe }}, 
+                        borderColor: '#007bff', 
+                        borderWidth: 2, 
+                        fill: true, 
+                        backgroundColor: 'rgba(0, 123, 255, 0.2)' 
+                    }] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Revenus (€)' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const selectedMonth = {{ chart_sales.labels|safe }}[index];
+                            const form = document.getElementById('filterForm');
+                            const startInput = form.querySelector('input[name="start_date"]');
+                            const endInput = form.querySelector('input[name="end_date"]');
+                            startInput.value = selectedMonth + '-01'; // Début du mois
+                            endInput.value = selectedMonth + '-31'; // Fin approximative du mois
+                            form.submit();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Commandes par jour
+        if (isValidChartData({{ chart_orders.labels|safe }}, {{ chart_orders.data|safe }})) {
+            new Chart(document.getElementById('ordersChart'), {
+                type: 'bar',
+                data: { 
+                    labels: {{ chart_orders.labels|safe }}, 
+                    datasets: [{ 
+                        label: 'Commandes', 
+                        data: {{ chart_orders.data|safe }}, 
+                        backgroundColor: '#dc3545', 
+                        borderWidth: 1 
+                    }] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Nombre' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+
+        // Produits les mieux vendus
+        if (isValidChartData({{ chart_top_products.labels|safe }}, {{ chart_top_products.data|safe }})) {
+            new Chart(document.getElementById('topProductsChart'), {
+                type: 'pie',
+                data: { 
+                    labels: {{ chart_top_products.labels|safe }}, 
+                    datasets: [{ 
+                        data: {{ chart_top_products.data|safe }}, 
+                        backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff'] 
+                    }] 
+                },
+                options: { 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { callbacks: { label: function(context) { return `${context.label}: ${context.raw} unités`; } } } } 
+                }
+            });
+        }
+
+        // Statut des commandes
+        if (isValidChartData({{ chart_order_status.labels|safe }}, {{ chart_order_status.data|safe }})) {
+            new Chart(document.getElementById('orderStatusChart'), {
+                type: 'doughnut',
+                data: { 
+                    labels: {{ chart_order_status.labels|safe }}, 
+                    datasets: [{ 
+                        data: {{ chart_order_status.data|safe }}, 
+                        backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0'],
+                        borderWidth: 1
+                    }] 
+                },
+                options: { 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+
+        // Stocks par produit
+        if (isValidChartData({{ chart_stock.labels|safe }}, {{ chart_stock.data|safe }})) {
+            new Chart(document.getElementById('stockChart'), {
+                type: 'bar',
+                data: { 
+                    labels: {{ chart_stock.labels|safe }}, 
+                    datasets: [{ 
+                        label: 'Stock', 
+                        data: {{ chart_stock.data|safe }}, 
+                        backgroundColor: '#17a2b8', 
+                        borderWidth: 1 
+                    }] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Unités' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+
+        // Demandes par produit
+        if (isValidChartData({{ chart_requests.labels|safe }}, {{ chart_requests.data|safe }})) {
+            new Chart(document.getElementById('requestsChart'), {
+                type: 'bar',
+                data: { 
+                    labels: {{ chart_requests.labels|safe }}, 
+                    datasets: [{ 
+                        label: 'Demandes', 
+                        data: {{ chart_requests.data|safe }}, 
+                        backgroundColor: '#6f42c1', 
+                        borderWidth: 1 
+                    }] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Nombre' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+
+        // Ventes vs Stocks
+        if (isValidChartData({{ chart_sales_vs_stock.labels|safe }}, {{ chart_sales_vs_stock.sold_data|safe }}) && isValidChartData({{ chart_sales_vs_stock.labels|safe }}, {{ chart_sales_vs_stock.remaining_data|safe }})) {
+            new Chart(document.getElementById('salesVsStockChart'), {
+                type: 'bar',
+                data: { 
+                    labels: {{ chart_sales_vs_stock.labels|safe }}, 
+                    datasets: [
+                        { label: 'Ventes', data: {{ chart_sales_vs_stock.sold_data|safe }}, backgroundColor: '#20c997' },
+                        { label: 'Stocks', data: {{ chart_sales_vs_stock.remaining_data|safe }}, backgroundColor: 'rgba(32, 201, 151, 0.3)' }
+                    ] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Unités' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+
+        // Avis par produit
+        if (isValidChartData({{ chart_reviews.labels|safe }}, {{ chart_reviews.avg_data|safe }}) && isValidChartData({{ chart_reviews.labels|safe }}, {{ chart_reviews.count_data|safe }})) {
+            new Chart(document.getElementById('reviewsChart'), {
+                type: 'bar',
+                data: { 
+                    labels: {{ chart_reviews.labels|safe }}, 
+                    datasets: [
+                        { label: 'Note', data: {{ chart_reviews.avg_data|safe }}, backgroundColor: '#28a745' },
+                        { label: 'Avis', data: {{ chart_reviews.count_data|safe }}, backgroundColor: 'rgba(40, 167, 69, 0.3)' }
+                    ] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Valeur' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+
+        // Activité globale
+        if (isValidChartData({{ chart_activity.labels|safe }}, {{ chart_activity.data|safe }})) {
+            new Chart(document.getElementById('activityChart'), {
+                type: 'bar',
+                data: { 
+                    labels: {{ chart_activity.labels|safe }}, 
+                    datasets: [{ 
+                        label: 'Valeurs', 
+                        data: {{ chart_activity.data|safe }}, 
+                        backgroundColor: ['#007bff', '#dc3545', '#6f42c1', '#17a2b8'], 
+                        borderWidth: 1 
+                    }] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Valeur' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+
+        // Ventes prévues
+        if (isValidChartData({{ chart_forecast.labels|safe|default:"[]" }}, {{ chart_forecast.data|safe|default:"[]" }})) {
+            new Chart(document.getElementById('salesForecastChart'), {
+                type: 'line',
+                data: { 
+                    labels: {{ chart_forecast.labels|safe|default:"[]" }}, 
+                    datasets: [{ 
+                        label: 'Prévisions (€)', 
+                        data: {{ chart_forecast.data|safe|default:"[]" }}, 
+                        borderColor: '#007bff', 
+                        fill: true, 
+                        backgroundColor: 'rgba(0, 123, 255, 0.2)' 
+                    }] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Revenus (€)' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+
+        // Vues
+        if (isValidChartData({{ view_labels|safe|default:"[]" }}, {{ view_data|safe|default:"[]" }})) {
+            new Chart(document.getElementById('viewsChart'), {
+                type: 'line',
+                data: { 
+                    labels: {{ view_labels|safe|default:"[]" }}, 
+                    datasets: [{ 
+                        label: 'Vues', 
+                        data: {{ view_data|safe|default:"[]" }}, 
+                        borderColor: '#28a745', 
+                        fill: true, 
+                        backgroundColor: 'rgba(40, 167, 69, 0.2)' 
+                    }] 
+                },
+                options: { 
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Nombre de Vues' } } }, 
+                    plugins: { legend: { labels: { color: '#333' } }, tooltip: { mode: 'index', intersect: false } } 
+                }
+            });
+        }
+    </script>
+    <style>
+        .bg-purple { background-color: #6f42c1; }
+        .bg-teal { background-color: #20c997; }
+        .bg-indigo { background-color: #6610f2; }
+        .bg-dark { background-color: #343a40; }
+        canvas { max-height: 300px; }
+        #forecasts { animation: fadeIn 1s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        h3 { border-bottom: 2px solid #dee2e6; padding-bottom: 10px; }
+        .card-header { font-weight: 500; }
+        .text-muted { font-size: 0.85rem; }
+    </style>
+</div>
+{% endblock %}

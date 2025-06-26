@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .chat-header {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px 8px 0 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .chat-messages {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 20px;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+    }
+    .message {
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+    .message-sender {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .message-content {
+        padding: 10px 15px;
+        border-radius: 15px;
+        max-width: 70%;
+        word-wrap: break-word;
+    }
+    .message-sent {
+        align-self: flex-end;
+        text-align: right;
+    }
+    .message-sent .message-content {
+        background-color: #007bff;
+        color: white;
+        margin-left: auto;
+    }
+    .message-received {
+        align-self: flex-start;
+    }
+    .message-received .message-content {
+        background-color: #f1f1f1;
+        color: #333;
+    }
+    .message-timestamp {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 5px;
+    }
+    .chat-form {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <h3>Conversation avec {{ other_user.username }} à propos de {{ conversation.product.name }}</h3>
+        <p><a href="{% url 'store:product_detail' conversation.product.id %}" class="text-primary">Voir le produit</a></p>
+    </div>
+    <div class="chat-messages">
+        {% for message in messages %}
+            <div class="message {% if message.sender == user %}message-sent{% else %}message-received{% endif %}">
+                <div class="message-sender">{{ message.sender.username }}</div>
+                <div class="message-content">{{ message.content }}</div>
+                <div class="message-timestamp">{{ message.sent_at|date:"d/m/Y H:i" }}</div>
+            </div>
+        {% empty %}
+            <p class="text-muted text-center">Aucun message pour l'instant. Commencez la conversation !</p>
+        {% endfor %}
+    </div>
+
+    <form method="post" class="chat-form">
+        {% csrf_token %}
+        <div class="mb-3">
+            <textarea name="content" class="form-control" rows="3" placeholder="Tapez votre message..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Envoyer</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Faire défiler automatiquement vers le bas pour voir les derniers messages
+document.addEventListener('DOMContentLoaded', function() {
+    const chatMessages = document.querySelector('.chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+</script>
+{% endblock %}

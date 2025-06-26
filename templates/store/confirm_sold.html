@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Confirmer la vente{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Confirmer la vente de {{ product.name }}</h2>
+    <p>Êtes-vous sûr de vouloir marquer ce produit comme vendu ? Cette action mettra le stock à 0 et marquera le produit comme non disponible.</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmer</button>
+        <a href="{% url 'store:product_detail' product_id=product.id %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}
